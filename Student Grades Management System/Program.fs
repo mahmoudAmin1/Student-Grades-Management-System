@@ -1,6 +1,9 @@
-﻿open System
+﻿//namespace Student_Grades_Management_System
+
+open System
 open System.Windows.Forms
-open Student_Grades_Management_System.MainForm
+open System.Drawing
+open Student_Grades_Management_System
 
 
 [<STAThread>]
