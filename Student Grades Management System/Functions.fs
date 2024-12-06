@@ -18,7 +18,7 @@ let readFileTo2DArray filePath =
         // Return an empty array if the file doesn't exist
         [||]
 let appendToFile filePath content =
-    File.AppendAllText(filePath, content)
+    File.AppendAllText(filePath, "\n" + content)
 
 let users = readFileTo2DArray "../../../Files/users.txt"
 let students=readFileTo2DArray "../../../Files/students.txt"
