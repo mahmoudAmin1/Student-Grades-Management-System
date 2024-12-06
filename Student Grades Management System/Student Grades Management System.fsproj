@@ -8,7 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="MainForm.fs" />
+    <Content Include="Files\users.txt" />
+    <Content Include="Files\students.txt" />
+    <Compile Include="Functions.fs" />
+    <Compile Include="Forms\AddStudent.fs" />
+    <Compile Include="Forms\StatisticsForm.fs" />
+    <Compile Include="Forms\ViewStudentsForm.fs" />
+    <Compile Include="Forms\AdminForm.fs" />
+    <Compile Include="Forms\MainForm.fs" />
+    <Compile Include="Controller.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
