@@ -11,6 +11,7 @@
     <Content Include="Files\users.txt" />
     <Content Include="Files\students.txt" />
     <Compile Include="Functions.fs" />
+    <Compile Include="GUI.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

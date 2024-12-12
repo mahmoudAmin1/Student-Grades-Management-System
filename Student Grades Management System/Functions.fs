@@ -32,7 +32,6 @@ let refreshData () =
     students <- readFileTo2DArray "../../../Files/students.txt"
 let Studentsdata () =
    refreshData()
-   let students=readFileTo2DArray "../../../Files/students.txt"
    (students)
 let login (username:string) (password:string) =
     match Array.tryFind (fun (user:string[]) -> user.[0] = username && user.[1] = password) users with
