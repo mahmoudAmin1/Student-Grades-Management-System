@@ -10,13 +10,118 @@ module GlobalState =
     // Example of a global user role
     let mutable currentUserRole = ""
 
-type ViewStudentsForm() as student =
+    
+type MainForm() as main =
+    inherit Form(Text="Login Form",Width = 600,Height = 400)
+    let mutable auth =""
+    let username = new TextBox(PlaceholderText = "Enter your Username" ,Height=30,Width = 300,Location = Point(150,90)  )
+    let password = new TextBox(PlaceholderText = "Enter your Password",Height=30,Width = 300,Location = Point(150,150),PasswordChar = '*'  )
+    let loginButton = new Button(Text = "Login",Height=30,Width=60,Visible = true,Location = Point(270, 240))
+    let AdminForm = new AdminForm()
+    let UserForm =new UserForm()
+    // Create a label
+    let userlabel = new Label(Text = "Username", Location = System.Drawing.Point(150, 70), AutoSize = true)
+    let passlabel = new Label(Text = "Password", Location = System.Drawing.Point(150, 130), AutoSize = true)
+    do
+
+        loginButton.Click.Add(fun _ ->
+            let result=Functions.login username.Text password.Text
+            if result ="admin" then 
+                begin
+                    GlobalState.currentUserRole <- "admin"
+                    main.Hide()
+                    AdminForm.Show()
+                end
+             else if result="user" then
+                GlobalState.currentUserRole <- "user"
+                main.Hide()
+                UserForm.Show()
+             else
+                MessageBox.Show($"{result}") |> ignore
+        )
+
+        // Add controls
+        main.Controls.AddRange([|loginButton;username;password;userlabel;passlabel|])
+
+
+and AdminForm() as admin =
+    inherit Form(Text = "Admin Main Form",Width = 600,Height = 400  )
+
+    let logout = new Button(Text="Log Out",AutoSize=true,Visible = true,Location=Point(500,20))
+    let Add = new Button(Text = "Add Student",Visible = true,Height =30,Width = 150,Location =Point(225, 50))
+    let UpdateButton = new Button(Text = "Update Student",Visible = true,Height =30,Width = 150,Location =Point(225, 100))
+    let Remove = new Button(Text = "Delete Student",Visible = true,Height =30,Width = 150,Location =Point(225,150))
+    let ViewStudents = new Button(Text = "View Students",Visible = true,Height =30,Width = 150,Location =Point(225, 200))
+    let ViewStatistics = new Button(Text = "View Statistics",Visible = true,Height =30,Width = 150,Location =Point(225, 250))
+    
+    do 
+        admin.Controls.AddRange([|Add;UpdateButton;Remove;ViewStudents;ViewStatistics;logout|])
+        // Button click event handler
+        logout.Click.Add(fun _ ->
+                    let mainform = new MainForm()
+                    GlobalState.currentUserRole <- ""
+                    admin.Hide()
+                    mainform.Show()
+        )
+        ViewStudents.Click.Add(fun _ ->
+                    let StudentsForm = new ViewStudentsForm()
+                    admin.Hide()
+                    StudentsForm.Show()
+        )
+        ViewStatistics.Click.Add(fun _ ->
+                    let StatisticsForm= new StatisticsForm()
+                    admin.Hide()
+                    StatisticsForm.Show()
+        )
+        Add.Click.Add(fun _ ->
+                    let AddStudentForm =new AddStudent()
+                    admin.Hide()
+                    AddStudentForm.Show()
+        ) 
+        Remove.Click.Add(fun _ ->
+                    let DeleteForm =new DeleteStudentForm()
+                    admin.Hide()
+                    DeleteForm.Show()
+        )
+        UpdateButton.Click.Add(fun _ ->
+                    let UpdateForm =new UpdateStudentForm()
+                    admin.Hide()
+                    UpdateForm.Show()
+        )
+and UserForm() as user =
+    inherit Form(Text = "User Main Form",Width = 600,Height = 400  )
+
+    let logout = new Button(Text="Log Out",AutoSize=true,Visible = true,Location=Point(500,20))
+    let ViewStudents = new Button(Text = "View Students",Visible = true,Height =30,Width = 150,Location =Point(225, 100))
+    let ViewStatistics = new Button(Text = "View Statistics",Visible = true,Height =30,Width = 150,Location =Point(225, 200))
+    
+    do 
+        user.Controls.AddRange([|ViewStudents;ViewStatistics;logout|])
+        // Button click event handler
+        logout.Click.Add(fun _ ->
+                    let mainform = new MainForm()
+                    GlobalState.currentUserRole <- ""
+                    user.Hide()
+                    mainform.Show()
+        )
+        ViewStudents.Click.Add(fun _ ->
+                    let StudentsForm = new ViewStudentsForm()
+                    user.Hide()
+                    StudentsForm.Show()
+        )
+        ViewStatistics.Click.Add(fun _ ->
+                    let StatisticsForm= new StatisticsForm()
+                    user.Hide()
+                    StatisticsForm.Show()
+        )
+
+and ViewStudentsForm() as student =
     inherit Form(Text="View Students Form",Width=600,Height=400)
     let studentsData= Functions.Studentsdata()
     let dataGrid = new DataGridView(Visible = true,AllowUserToDeleteRows = false,AllowUserToAddRows = false,ReadOnly = true,Width=600,Location=Point(0,40),Height=360 )
     let back = new Button(Text="back",AutoSize=true,Visible = true,Location=Point(500,10))
-    //let adminform =new AdminForm()
-    //let userForm =new UserForm()
+    let adminform =new AdminForm()
+    let userForm =new UserForm()
         // Load data into the DataGridView
     let loadData () =
         dataGrid.ColumnCount <- 5
@@ -39,11 +144,11 @@ type ViewStudentsForm() as student =
             if GlobalState.currentUserRole = "admin" then
                 begin
                     student.Hide()
-                    //adminform.Show()
+                    adminform.Show()
                 end
             else 
                 student.Hide()
-                //userForm.Show()
+                userForm.Show()
         )
         // Optional: Expose a public method to reload data
     member student.RefreshData() =
@@ -59,8 +164,8 @@ and StatisticsForm() as statistics =
     let passfill =Functions.Passfill(averageData)
     let dataGrid = new DataGridView(Dock = DockStyle.Left,Width = 375,ReadOnly = true,AllowUserToAddRows = false,AllowUserToDeleteRows = false,Visible = true)
     let back = new Button(Text="back",AutoSize=true,Visible = true,Location=Point(500,20))
-    //let adminform =new AdminForm()
-    //let userForm =new UserForm()
+    let adminform =new AdminForm()
+    let userForm =new UserForm()
         // Load data into the DataGridView
     let loadData () =
         dataGrid.ColumnCount <- 3
@@ -89,11 +194,11 @@ and StatisticsForm() as statistics =
             if GlobalState.currentUserRole = "admin" then
                 begin
                     statistics.Hide()
-                    //adminform.Show()
+                    adminform.Show()
                 end
             else 
                 statistics.Hide()
-                //userForm.Show()
+                userForm.Show()
         )
         // Optional: Expose a public method to reload data
     member statistics.RefreshData() =
@@ -113,12 +218,12 @@ and AddStudent() as addStudent =
     let grade3 = new TextBox(PlaceholderText="Grade 3",Height=30,Width = 160,Location = Point(410,150))
     let add = new Button(Text = "Add Student", AutoSize = true,Visible = true,Location = Point(250, 240))
     let back = new Button(Text="back",AutoSize=true,Visible = true,Location=Point(500,20))
-    //let adminform =new AdminForm()
+    let adminform =new AdminForm()
     do
         addStudent.Controls.AddRange([|id;name;grade1;grade2;grade3;add;idlabel;namelabel;grade1label;grade2label;grade3label;back|])
         back.Click.Add(fun _ ->
             addStudent.Hide()
-            //adminform.Show()
+            adminform.Show()
         )
         add.Click.Add(fun _ ->
             let result=Functions.addStudent id.Text name.Text grade1.Text grade2.Text grade3.Text
@@ -131,7 +236,7 @@ and DeleteStudentForm() as delete =
     let ID = new TextBox(PlaceholderText = "Enter Student ID" ,Height=30,Width = 300,Location = Point(150,130)  )
     let DeleteButton = new Button(Text = "Remove Student",Height=30,Width = 150,Visible = true,Location = Point(225, 200))
     let back = new Button(Text="back",AutoSize=true,Visible = true,Location=Point(500,20))
-    //let adminform =new AdminForm()
+    let adminform =new AdminForm()
     do
 
         DeleteButton.Click.Add(fun _ ->
@@ -140,7 +245,7 @@ and DeleteStudentForm() as delete =
         )
         back.Click.Add(fun _ ->
             delete.Hide()
-            //adminform.Show()
+            adminform.Show()
         )
         // Add controls
         delete.Controls.AddRange([|IDlabel;ID;DeleteButton;back|])
@@ -160,12 +265,12 @@ and UpdateStudentForm() as update =
     let UpdateButton = new Button(Text = "Update Student", AutoSize = true,Visible = true,Location = Point(250, 240))
     let SearchButton = new Button(Text = "Search", AutoSize = true,Visible = true,Location = Point(250, 70))
     let back = new Button(Text="back",AutoSize=true,Visible = true,Location=Point(500,20))
-    //let adminform =new AdminForm()
+    let adminform =new AdminForm()
     do
         update.Controls.AddRange([|id;idlabel;SearchButton;back|])
         back.Click.Add(fun _ ->
             update.Hide()
-            //adminform.Show()
+            adminform.Show()
         )
 
         SearchButton.Click.Add(fun _ ->
