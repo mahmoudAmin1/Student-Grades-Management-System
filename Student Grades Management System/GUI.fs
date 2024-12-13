@@ -10,7 +10,96 @@ module GlobalState =
     // Example of a global user role
     let mutable currentUserRole = ""
 
-type AddStudent() as addStudent =
+type ViewStudentsForm() as student =
+    inherit Form(Text="View Students Form",Width=600,Height=400)
+    let studentsData= Functions.Studentsdata()
+    let dataGrid = new DataGridView(Visible = true,AllowUserToDeleteRows = false,AllowUserToAddRows = false,ReadOnly = true,Width=600,Location=Point(0,40),Height=360 )
+    let back = new Button(Text="back",AutoSize=true,Visible = true,Location=Point(500,10))
+    //let adminform =new AdminForm()
+    //let userForm =new UserForm()
+        // Load data into the DataGridView
+    let loadData () =
+        dataGrid.ColumnCount <- 5
+        dataGrid.Columns.[0].Name <- "ID"
+        dataGrid.Columns.[1].Name <- "Name"
+        dataGrid.Columns.[2].Name <- "Grade 1"
+        dataGrid.Columns.[3].Name <- "Grade 2"
+        dataGrid.Columns.[4].Name <- "Grade 3"
+        
+        dataGrid.Rows.Clear()
+        for student in studentsData do
+             dataGrid.Rows.Add(student.[0], student.[1], student.[2], student.[3], student.[4]) |> ignore
+
+    do
+        student.Controls.AddRange([|dataGrid;back|])
+        // Load data when the form is created
+        student.Load.Add(fun _ -> loadData())
+        dataGrid.Refresh()
+        back.Click.Add(fun _ ->
+            if GlobalState.currentUserRole = "admin" then
+                begin
+                    student.Hide()
+                    //adminform.Show()
+                end
+            else 
+                student.Hide()
+                //userForm.Show()
+        )
+        // Optional: Expose a public method to reload data
+    member student.RefreshData() =
+        loadData()
+        MessageBox.Show($"Student data: {studentsData}") |> ignore 
+
+and StatisticsForm() as statistics =
+    inherit Form(Text = "Students Statistics",Width=600,Height=400)
+    let students =Functions.Studentsdata()
+    let averageData =Functions.calculateAverages(students)
+    let Highestgrade =Functions.HighestGrades(students)
+    let Lowestgrade = Functions.LowestGrades(students)
+    let passfill =Functions.Passfill(averageData)
+    let dataGrid = new DataGridView(Dock = DockStyle.Left,Width = 375,ReadOnly = true,AllowUserToAddRows = false,AllowUserToDeleteRows = false,Visible = true)
+    let back = new Button(Text="back",AutoSize=true,Visible = true,Location=Point(500,20))
+    //let adminform =new AdminForm()
+    //let userForm =new UserForm()
+        // Load data into the DataGridView
+    let loadData () =
+        dataGrid.ColumnCount <- 3
+        dataGrid.Columns.[0].Name <- "ID"
+        dataGrid.Columns.[1].Name <- "Name"
+        dataGrid.Columns.[2].Name <- "Average"
+        
+        dataGrid.Rows.Clear()
+        for average in averageData do
+            let formattedAverage = 
+                match System.Double.TryParse(average.[2]) with
+                | (true, value) -> sprintf "%.2f" value
+                | _ -> average.[2]  // If parsing fails, keep the original string
+            dataGrid.Rows.Add(average.[0],average.[1],formattedAverage)  |> ignore
+    // Create a label control
+    let HighestGrades = new Label(Visible = true,AutoSize = true,Location = new Point(400,50),Text = sprintf "The Highest Grades:\n\nSubject 1: %.2f\nSubject 2: %.2f\nSubject 3: %.2f" Highestgrade.[0].[0] Highestgrade.[0].[1] Highestgrade.[0].[2])
+    let LowestGrades = new Label(Visible = true,AutoSize = true,Location = new Point(400,140),Text = sprintf "\nThe Lowest Grades:\n\nSubject 1: %.2f\nSubject 2: %.2f\nSubject 3: %.2f" Lowestgrade.[0].[0] Lowestgrade.[0].[1] Lowestgrade.[0].[2])
+    let Passfill = new Label(Visible = true,AutoSize = true,Location = new Point(400,270),Text = sprintf "The Pass/Fill Rate:\n\nAll Subjects : %.2f"  passfill.[0])
+    do
+        statistics.Controls.AddRange([|dataGrid;HighestGrades;LowestGrades;Passfill;back|])
+        // Load data when the form is created
+        statistics.Load.Add(fun _ -> loadData())
+        dataGrid.Refresh()
+
+        back.Click.Add(fun _ ->
+            if GlobalState.currentUserRole = "admin" then
+                begin
+                    statistics.Hide()
+                    //adminform.Show()
+                end
+            else 
+                statistics.Hide()
+                //userForm.Show()
+        )
+        // Optional: Expose a public method to reload data
+    member statistics.RefreshData() =
+        loadData()
+
+and AddStudent() as addStudent =
     inherit Form(Text="Add Student Form",Width = 600,Height = 400)
     let idlabel = new Label(Text = "ID", Location = System.Drawing.Point(30, 70), AutoSize = true)
     let namelabel = new Label(Text = "Name", Location = System.Drawing.Point(320, 70), AutoSize = true)
